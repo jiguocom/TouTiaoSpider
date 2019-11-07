@@ -74,6 +74,51 @@ class TouTiao:
                 f.write(jsonCookies)
 
 
+    # 获取数据
+    def getData(self, iswtt=0):
+        html = self.browser.find_elements_by_xpath('//li[@ga_event="feed_item_click"]')
+
+        article_num = 0
+        article_comment = 0
+        article_n = 0
+        wtt_zan = 0
+
+        if html:
+            for i in html:
+                num = i.find_elements_by_class_name('lbtn')[0].text
+                zan = ""
+                if iswtt == 1:
+                    zan = i.find_elements_by_class_name('lbtn')[1].text
+                    comment = i.find_elements_by_class_name('lbtn')[2].text
+                    date_str = i.find_elements_by_class_name('lbtn')[3].text
+                else:
+                    comment = i.find_elements_by_class_name('lbtn')[1].text
+                    date_str = i.find_elements_by_class_name('lbtn')[2].text
+
+                print('%s %s %s %s' % (num, comment, date_str, zan))
+
+                if num != '置顶':
+                    # 阅读数处理# 评论数处理
+                    num = self.t_num(num)
+                    comment = self.t_num(comment)
+
+                    if iswtt == 1:
+                        zan = self.t_num(zan)
+                        wtt_zan += zan
+
+                    # 统计
+
+                    article_num += num
+                    article_comment += comment
+                    article_n += 1
+                    # print('%s %s %s' % (num, comment, date))
+
+                    timeArray = time.strptime(date_str.strip().strip("⋅ "), "%Y-%m-%d %H:%M")
+                    timeStamp = int(time.mktime(timeArray))
+                    if self.t >= timeStamp + 86400 * 30:
+                        break
+        return (article_num,article_comment, article_n, wtt_zan)
+
 
     def article_spider(self):
         print('--------------------------文章数据--------------------------------------')
@@ -81,34 +126,8 @@ class TouTiao:
         self.browser.find_element_by_xpath('//li[@idx=0]').click()
         sleep(2)
         self.page_time()
-        article_num = 0
-        article_comment = 0
-        article_n = 0
-        html = self.browser.find_elements_by_xpath('//li[@ga_event="feed_item_click"]')
-        if html:
-            for i in html:
-                num = i.find_elements_by_class_name('lbtn')[0].text
-                comment = i.find_elements_by_class_name('lbtn')[1].text
-                date = i.find_elements_by_class_name('lbtn')[2].text
 
-                print('%s %s %s' % (num, comment, date))
-
-                if num != '置顶':
-                    # 阅读数处理# 评论数处理
-                    num = self.t_num(num)
-                    comment = self.t_num(comment)
-
-                    # 统计
-                    article_num += num
-                    article_comment += comment
-                    article_n += 1
-                    # print('%s %s %s' % (num, comment, date))
-
-                    timeArray = time.strptime(date, "⋅ %Y-%m-%d %H:%M")
-                    timeStamp = int(time.mktime(timeArray))
-                    if self.t >= timeStamp + 86400 * 30:
-                        break
-
+        article_num, article_comment, article_n, zan_num = self.getData()
         print('文章总数：%d 阅读总数：%d 评论总数：%d' % (article_n, article_num, article_comment))
 
 
@@ -118,34 +137,7 @@ class TouTiao:
         self.browser.find_element_by_xpath('//li[@idx=1]').click()
         sleep(2)
         self.page_time()
-        vedio_num = 0
-        vedio_comment = 0
-        vedio_n = 0
-        html = self.browser.find_elements_by_xpath('//li[@ga_event="feed_item_click"]')
-        if html:
-            for i in html:
-                num = i.find_elements_by_class_name('lbtn')[0].text
-                comment = i.find_elements_by_class_name('lbtn')[1].text
-                date = i.find_elements_by_class_name('lbtn')[2].text
-
-                print('%s %s %s' % (num, comment, date))
-
-                if num != '置顶':
-                    # 阅读数处理# 评论数处理
-                    num = self.t_num(num)
-                    comment = self.t_num(comment)
-
-                    # 统计
-                    vedio_num += num
-                    vedio_comment += comment
-                    vedio_n += 1
-                    # print('%s %s %s' % (num, comment, date))
-
-                    timeArray = time.strptime(date, "⋅ %Y-%m-%d %H:%M")
-                    timeStamp = int(time.mktime(timeArray))
-                    if self.t >= timeStamp + 86400 * 30:
-                        break
-
+        vedio_num, vedio_comment, vedio_n, zan_num = self.getData()
         print('视频总数：%d 阅读总数：%d 评论总数：%d' % (vedio_n, vedio_num, vedio_comment))
 
     def wtt_spider(self):
@@ -154,37 +146,7 @@ class TouTiao:
         self.browser.find_element_by_xpath('//li[@idx=2]').click()
         sleep(2)
         self.page_time(3)
-        wtt_num = 0
-        wtt_zan = 0
-        wtt_comment = 0
-        wtt_n = 0
-        html = self.browser.find_elements_by_xpath('//li[@ga_event="feed_item_click"]')
-        if html:
-            for i in html:
-                num = i.find_elements_by_class_name('lbtn')[0].text
-                zan = i.find_elements_by_class_name('lbtn')[1].text
-                comment = i.find_elements_by_class_name('lbtn')[2].text
-                date = i.find_elements_by_class_name('lbtn')[3].text
-
-                print('%s %s %s %s' % (num, zan, comment, date))
-
-                if num != '置顶':
-                    # 阅读数处理# 评论数处理
-                    num = self.t_num(num)
-                    zan = self.t_num(zan)
-                    comment = self.t_num(comment)
-
-                    # 统计
-                    wtt_num += num
-                    wtt_zan += zan
-                    wtt_comment += comment
-                    wtt_n += 1
-                    # print('%s %s %s' % (num, comment, date))
-
-                    timeArray = time.strptime(date, " ⋅ %Y-%m-%d %H:%M")
-                    timeStamp = int(time.mktime(timeArray))
-                    if self.t >= timeStamp + 86400 * 30:
-                        break
+        wtt_num, wtt_comment, wtt_n, wtt_zan = self.getData(1)
 
         print('微头条总数：%d 阅读总数：%d 点赞数：%d 评论总数：%d' % (wtt_n, wtt_num,wtt_zan, wtt_comment))
 
